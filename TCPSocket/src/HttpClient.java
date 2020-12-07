@@ -18,10 +18,15 @@ public class HttpClient {
 			InputStream inputStream = connection.getInputStream();
 			OutputStream outputStream = connection.getOutputStream();
 			
-			// Send data to the server
+			// Send request to the server
 			System.out.println("Send data to the server");
+			// Request-line = Method SP Request-URI SP HTTP-Version CRLF
+			String request = "GET / HTTP/1.1\r\n";
+			request += "Host: localhost\r\n";
+			request += "\r\n";
+			
 			PrintWriter printWriter = new PrintWriter(outputStream);
-			printWriter.write("Hello server\r\n");
+			printWriter.write(request);
 			printWriter.flush();
 			
 			// Read data from the server
