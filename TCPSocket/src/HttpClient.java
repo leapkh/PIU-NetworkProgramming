@@ -11,7 +11,7 @@ public class HttpClient {
 		
 		try {
 			// Initiate connection to the server
-			Socket connection = new Socket("localhost", 80);
+			Socket connection = new Socket("localhost", 1234);
 			System.out.println("The connection to the server was established.");
 			
 			// Load IO streams to receive and send data from and to the server
