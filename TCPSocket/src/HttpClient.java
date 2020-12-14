@@ -3,6 +3,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class HttpClient {
@@ -11,7 +13,7 @@ public class HttpClient {
 		
 		try {
 			// Initiate connection to the server
-			Socket connection = new Socket("localhost", 1234);
+			Socket connection = new Socket("localhost", 80);
 			System.out.println("The connection to the server was established.");
 			
 			// Load IO streams to receive and send data from and to the server
@@ -20,13 +22,13 @@ public class HttpClient {
 			
 			// Send request to the server
 			System.out.println("Send data to the server");
-			// Request-line = Method SP Request-URI SP HTTP-Version CRLF
-			String request = "GET / HTTP/1.1\r\n";
-			request += "Host: localhost\r\n";
-			request += "\r\n";
+			Map<String, String> headers = new HashMap<>();
+			headers.put("Host", "localhost");
+			HttpRequest request = new HttpRequest("GET", "/", headers, "");
+			
 			
 			PrintWriter printWriter = new PrintWriter(outputStream);
-			printWriter.write(request);
+			printWriter.write(request.toString());
 			printWriter.flush();
 			
 			// Read data from the server
