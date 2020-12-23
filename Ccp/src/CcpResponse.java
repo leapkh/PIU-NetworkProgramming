@@ -14,6 +14,12 @@ public class CcpResponse {
 	private String status;
 	private List<String> data;
 	
+	public CcpResponse(String protocolVersion, String status, List<String> data) {
+		super();
+		this.protocolVersion = protocolVersion;
+		this.status = status;
+		this.data = data;
+	}
 	public String getProtocolVersion() {
 		return protocolVersion;
 	}
@@ -29,25 +35,47 @@ public class CcpResponse {
 	public List<String> getData() {
 		return data;
 	}
-	public void addData(String dataItem) {
-		if(data == null) {
-			data = new ArrayList<String>();
-		}
-		data.add(dataItem);
+	public void setData(List<String> data) {
+		this.data = data;
 	}
 	
 	public String toRawResponse() {
 		String dataString = "";
-		for(String dataItem : data) {
-			dataString += "<" + dataItem + ">";
+		if(data != null) {
+			for(String item : data) {
+				dataString += "<" + item + ">";
+			}
 		}
-		String rawResponse = protocolVersion + "#" + status + "#" + dataString + "\r\n";
-		return rawResponse;
+		return protocolVersion + "#" + status + "#" + dataString + "\r\n"; 
 	}
 	
-	public static CcpResponse fromString(String rawResponse) {
-		//TODO
-		return null;
+	public static CcpResponse fromRawResponse(String rawResponse) {
+		String[] parts = rawResponse.split("#");
+		String protocolVersion = parts[0];
+		String status = parts[1];
+		String dataString = parts[2];
+		List<String> data = null;
+		if(!dataString.isEmpty()) {
+			data = new ArrayList<>();
+			String[] dataParts = dataString.split("><");
+			for(String itemPart : dataParts) {
+				String readyItem = itemPart.replace("<", "").replace(">", "");
+				data.add(readyItem);
+			}
+		}
+		return new CcpResponse(protocolVersion, status, data);
+	}
+	
+	public String getResult() {
+		if(data == null) {
+			return "There is no any result.";
+		} else {
+			String result = "";
+			for(String item : data) {
+				result += " - " + item + "\n";
+			}
+			return result;
+		}
 	}
 	
 }

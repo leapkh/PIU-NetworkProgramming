@@ -5,38 +5,50 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class CcpServer {
 
 	public static void main(String[] args) {
 		
-		// Create server socket
 		try (ServerSocket serverSocket = new ServerSocket(9999)) {
 			
-			// Wait and accept connection from clients
-			System.out.println("Waiting for client...");
-			Socket connection = serverSocket.accept();
-			System.out.println("Accepted a client.");
-			
-			// Load IO streams
-			InputStream inputStream = connection.getInputStream();
-			OutputStream outputStream = connection.getOutputStream();
-			
-			// Read request from client
-			Scanner scanner = new Scanner(inputStream);
-			String rawRequest = scanner.nextLine();
-			// Convert raw request to the CcpRequest
-			CcpRequest request = CcpRequest.fromString(rawRequest);
-			if(request == null) {
-				// Invalid request
-				CcpResponse response = new CcpResponse();
-				response.setProtocolVersion("CCP/1.0");
-				response.setStatus("Invalid");
-				response.addData("Invalid request.");
-				responseToClient(outputStream, response);
-			} else {
-				// Valid request
+			while(true) {
+				// Wait for a client
+				System.out.println("Waiting for client...");
+				Socket connection = serverSocket.accept();
+				
+				// Read request from the client
+				InputStream inputStream = connection.getInputStream();
+				Scanner scanner = new Scanner(inputStream);
+				String rawRequest = scanner.nextLine();
+				CcpRequest request = CcpRequest.fromRawString(rawRequest);
+				
+				// Process the request
+				if(request.getOperation().equals(CcpOperation.LIST)) {
+					// Response supported currencies to the client
+					List<String> data = Arrays.asList(Constants.SUPPORTED_CURRENCIES);
+					CcpResponse response = new CcpResponse(Constants.PROTOCOL_VERSION, CcpStatus.OK, data);
+					sendResponse(connection, response);
+				} else {
+					// Response currency exchange result to the client
+					List<String> params = request.getParams();
+					String sourceCurrency = params.get(0);
+					double amount = Double.parseDouble(params.get(1));
+					String destinationCurrency = params.get(2);
+					double sourceExchangeRate = Constants.EXCHANGE_RATES.get(sourceCurrency);
+					double destinationExchangeRate = Constants.EXCHANGE_RATES.get(destinationCurrency);
+					double result = amount * destinationExchangeRate / sourceExchangeRate;  
+					
+					List<String> data = Arrays.asList(result + "");
+					CcpResponse response = new CcpResponse(Constants.PROTOCOL_VERSION, CcpStatus.OK, data);
+					sendResponse(connection, response);
+				}
+				
+				System.out.println("Done with the client.");
+				scanner.close();
+				connection.close();
 			}
 			
 		} catch (IOException e) {
@@ -45,8 +57,8 @@ public class CcpServer {
 		
 	}
 	
-	private static void responseToClient(OutputStream outputStream, CcpResponse response) {
-		System.out.println("Response to the client.");
+	private static void sendResponse(Socket connection, CcpResponse response) throws IOException {
+		OutputStream outputStream = connection.getOutputStream();
 		PrintWriter printWriter = new PrintWriter(outputStream);
 		printWriter.write(response.toRawResponse());
 		printWriter.flush();

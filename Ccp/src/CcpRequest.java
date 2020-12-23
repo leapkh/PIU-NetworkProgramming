@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -12,70 +13,58 @@ public class CcpRequest {
 	private String operation;
 	private List<String> params;
 	
+	public CcpRequest(String protocolVersion, String operation, List<String> params) {
+		super();
+		this.protocolVersion = protocolVersion;
+		this.operation = operation;
+		this.params = params;
+	}
 	public String getProtocolVersion() {
 		return protocolVersion;
 	}
-
 	public void setProtocolVersion(String protocolVersion) {
 		this.protocolVersion = protocolVersion;
 	}
-
 	public String getOperation() {
 		return operation;
 	}
-
 	public void setOperation(String operation) {
 		this.operation = operation;
 	}
-
 	public List<String> getParams() {
 		return params;
 	}
-
 	public void setParams(List<String> params) {
 		this.params = params;
 	}
-
-	public static CcpRequest fromString(String rawRequest) {
-		String[] infos = rawRequest.split("#");
-		// Check if it's in the correct format
-		if(infos.length != 3) {
-			return null;
+	
+	public String toRawString() {
+		String paramsString = "";
+		if(params != null) {
+			for(String param : params) {
+				paramsString += "<" + param + ">";
+			}
 		}
-		
-		if(!Constants.SUPPORTED_VERSIONS.contains(infos[0])) {
-			return null;
-		}
-		
-		if(!Constants.SUPPORTED_OPERATIONS.contains(infos[1])) {
-			return null;
-		}
-		
-		CcpRequest request = new CcpRequest();
-		request.setProtocolVersion(infos[0]);
-		request.setOperation(infos[1]);
-		
-		// Example raw params = <USD><1><KHR>
-		String rawParams = infos[2];
-		String[] params = rawParams.split("><");
-		List<String> paramList = new ArrayList<>();
-		for(String param : params) {
-			paramList.add(param.replace("<", "").replace(">", ""));
-		}
-		
-		request.setParams(paramList);
-		
-		return request;
-		
+		return protocolVersion + "#" + operation + "#" + paramsString + "\r\n";
 	}
-
-	public String toRawRequest() {
-		String paramString = "";
-		for(String param : params) {
-			paramString += "<" + param + ">";
+	
+	public static CcpRequest fromRawString(String rawString) {
+		String[] parts = rawString.split("#");
+		String protocolVersion = parts[0];
+		String operation = parts[1];
+		List<String> params = null;
+		if(parts.length == 3) {
+			String paramsString = parts[2];
+			if(!paramsString.isEmpty()) {
+				params = new ArrayList<>();
+				String[] paramParts = paramsString.split("><");
+				for(String paramPart : paramParts) {
+					String readyParam = paramPart.replace("<", "").replace(">", "");
+					params.add(readyParam);
+				}
+			}
 		}
-		String rawRequest = protocolVersion + "#" + operation + "#" + paramString + "\r\n";
-		return rawRequest;
+		return new CcpRequest(protocolVersion, operation, params);
 	}
 	
 }
