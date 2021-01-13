@@ -28,12 +28,12 @@ public class CcpClient {
 				String userInput = keyboadScanner.nextLine();
 				if(userInput.equals(CcpOperation.LIST)) {
 					CcpRequest request = new CcpRequest(Constants.PROTOCOL_VERSION, CcpOperation.LIST, null);
-					sendRequestToTheServer(connection, request);
+					Utils.sendRequestToTheServer(connection, request);
 				} else if(userInput.equals(CcpOperation.CONVERT)) {
 					
 				} else if(userInput.equals(CcpOperation.EXIT)) {
 					CcpRequest request = new CcpRequest(Constants.PROTOCOL_VERSION, CcpOperation.EXIT, null);
-					sendRequestToTheServer(connection, request);
+					Utils.sendRequestToTheServer(connection, request);
 					break;
 				} else {
 					System.out.println("Invalid input. Please try again.");
@@ -41,7 +41,7 @@ public class CcpClient {
 				}
 				
 				// Read response from the server
-				CcpResponse response = readResponseFromTheServer(connection);
+				CcpResponse response = Utils.readResponseFromTheServer(connection);
 				// Show the result to the user
 				System.out.println("Result: " + response.getResult());
 			}
@@ -51,19 +51,7 @@ public class CcpClient {
 		
 	}
 	
-	static void sendRequestToTheServer(Socket connection, CcpRequest request) throws IOException {
-		OutputStream outputStream = connection.getOutputStream();
-		PrintWriter printWriter = new PrintWriter(outputStream);
-		printWriter.write(request.toRawString());
-		printWriter.flush();
-	}
 	
-	static CcpResponse readResponseFromTheServer(Socket connection) throws IOException {
-		InputStream inputStream = connection.getInputStream();
-		Scanner scanner = new Scanner(inputStream);
-		String rawRespone = scanner.nextLine();
-		return CcpResponse.fromRawResponse(rawRespone);
-	}
 	
 	
 }
