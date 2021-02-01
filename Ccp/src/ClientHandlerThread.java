@@ -64,12 +64,6 @@ public class ClientHandlerThread extends Thread {
 	}
 	
 	private void sendResponse(Socket connection, CcpResponse response) throws IOException {
-		try {
-			Thread.sleep(10000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		OutputStream outputStream = connection.getOutputStream();
 		PrintWriter printWriter = new PrintWriter(outputStream);
 		printWriter.write(response.toRawResponse());

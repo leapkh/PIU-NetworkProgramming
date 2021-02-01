@@ -34,7 +34,7 @@ public class CcpSecureServer {
 			KeyStore keyStore = KeyStore.getInstance("JKS");
 			
 			// Fill the keystore object
-			FileInputStream inputStream = new FileInputStream("lib/piu-key.jks");
+			FileInputStream inputStream = new FileInputStream("lib/piu-key2.jks");
 			keyStore.load(inputStream, KEY_STORE_PASSWORD.toCharArray());
 			
 			// Initialize the key management factory
